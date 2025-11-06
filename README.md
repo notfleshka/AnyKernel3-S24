@@ -1,8 +1,8 @@
 # What is this?
 
-**It is an universal AnyKernel3 template for Samsung Galaxy S24 devices. It will most likely work for all kernels for these devices, maybe even for other devices, but not tested. Inspired from my previous work: [AnyKernel3 for Samsung A52 and A72](https://github.com/notfleshka/AnyKernel3-A52-A72).**
+**It is an universal AnyKernel3 template for Samsung Galaxy S24 Exynos (could possibly work with other S24 devices). It will most likely work for all kernels for this device, maybe even for other devices, but not tested. Inspired from my previous work: [AnyKernel3 for Samsung A52 and A72](https://github.com/notfleshka/AnyKernel3-A52-A72).**
 
-**Currently this only has AnyKernel3 template itself. Soon it will contain build script and some other things.**
+**Contains AnyKernel3 template and `build.sh`.**
 
 **Below is the default AnyKernel3 documentation.**
 
