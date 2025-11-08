@@ -25,7 +25,7 @@ MENUCONFIG=false    # Enables menuconfig
 # PRINTHELP=false   # Hardcodly disabled, code remnants still present. Prints help message
 CLEAN=false # Cleans output directory
 CONFIG=false    # Only configures the kernel (I am not so sure about what it does)
-CLEAN_BUILDCHAIN=false # Hardcordly disabled. Removes buildchain every build. If false, then downloading buildchain and copying prebuilts are skipped.
+# CLEAN_BUILDCHAIN=false # Hardcordly disabled. Removes buildchain every build. If false, then downloading buildchain and copying prebuilts are skipped.
 
 # This was used for fixing some versioning issues, but now I think it's not needed, code remnants are still present
 # SETVERSION=""   # Hardcordly disabled. Kernel version to set, I am not sure what is difference between this and local ver)
