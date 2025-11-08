@@ -23,7 +23,7 @@ MENUCONFIG=false    # Enables menuconfig
 # PRINTHELP=false   # Hardcodly disabled, code remnants still present. Prints help message
 CLEAN=false # Cleans output directory
 CONFIG=false    # Only configures the kernel (I am not so sure about what it does)
-CLEAN_BUILDCHAIN=false # Removes buildchain every build
+CLEAN_BUILDCHAIN=false # Removes buildchain every build. If false, then downloading buildchain and copying prebuilts are skipped.
 
 # This was used for fixing some versioning issues, but now I think it's not needed, code remnants are still present
 # SETVERSION=""   # Hardcordly disabled. Kernel version to set, I am not sure what is difference between this and local ver)
@@ -44,14 +44,13 @@ ODIN_TAR="${CURRENT_DIR}/boot.img.tar"  # Odin tar output path
 TARGETSOC="s5e9945"
 # End of main variables
 
-### Download buildchain 
-function getBuildtools() {
-    # Skip download if found buildchain
-    if [ -d "$BUILDCHAIN" ] && [ -n "$(ls -A "$BUILDCHAIN" 2>/dev/null)" ]; then
-        echo "[💠] Buildchain already present at $BUILDCHAIN, skipping download."
-        return 0
-    fi
+# Remove buildchain
+function removeBuildchain() {
+    rm -rf "$BUILDCHAIN"
+}
 
+# Download buildchain 
+function getBuildtools() {
     echo "[💠] Getting the buildchain..."
     mkdir -p "$BUILDCHAIN" && cd "$BUILDCHAIN" || return 1
 
@@ -72,15 +71,13 @@ function movePrebuilts() {
     echo "[✅] Done."
 }
 
-function removeBuildchain() {
-    rm -rf "$BUILDCHAIN"
-}
-
 if [ ! -d "$PREBUILTS" ]; then
-    getBuildtools
-    movePrebuilts
     if [ "$CLEAN_BUILDCHAIN" = true ]; then
         removeBuildchain
+        getBuildtools
+        movePrebuilts
+    else
+        echo "[💠] Skipping buildchain download and prebuilt copy."
     fi
 fi
 
@@ -158,7 +155,7 @@ if [ "$CLEAN" = true ]; then
     exit 0
 fi
 
-### Env setup 
+# Env setup 
 export PATH="${PREBUILTS}/build-tools/linux-x86/bin:${PATH}"
 export PATH="${PREBUILTS}/build-tools/path/linux-x86:${PATH}"
 export PATH="${PREBUILTS}/clang/host/linux-x86/clang-r510928/bin:${PATH}"
@@ -182,19 +179,19 @@ if [ -f "$CONFIG_FILE" ]; then
     TARGET_DEFCONFIG="oldconfig"
 fi
 
-### CONFIG only
+# CONFIG only
 if [ "$CONFIG" = true ]; then
     make -j"$(nproc)" -C "$KERNEL_DIR" O="$OUTPUT_DIR" $ARGS "$TARGET_DEFCONFIG"
     exit 0
 fi
 
-### MENUCONFIG
+# MENUCONFIG
 if [ "$MENUCONFIG" = true ]; then
     make -j"$(nproc)" -C "$KERNEL_DIR" O="$OUTPUT_DIR" $ARGS "${TARGET_DEFCONFIG}" HOSTCFLAGS="${CFLAGS}" HOSTLDFLAGS="${LDFLAGS}" menuconfig
     exit 0
 fi
 
-### Build defconfig
+# Build defconfig
 make -j"$(nproc)" \
     -C "${KERNEL_DIR}" O="${OUTPUT_DIR}" ${ARGS} \
     EXTRA_CFLAGS:=" -DCFG80211_SINGLE_NETDEV_MULTI_LINK_SUPPORT -DTARGET_SOC=${TARGETSOC}" \
@@ -205,13 +202,13 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
     exit 1
 fi
 
-### KernelSU enable
+# KernelSU enable
 if [ "$ENABLE_KERNELSU" = true ]; then
     "${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" \
         -e CONFIG_KSU -d CONFIG_KSU_KPROBES_HOOK
 fi
 
-### Samsung protection remove
+# Samsung protection remove
 if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
     "${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" \
         -d UH -d RKP -d KDP -d SECURITY_DEFEX -d INTEGRITY -d FIVE \
@@ -221,7 +218,7 @@ if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
         -e CONFIG_TMPFS_XATTR -e CONFIG_TMPFS_POSIX_ACL
 fi
 
-### Version fix
+# Version fix
 # LOCALVERSION=$("${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" --state CONFIG_LOCALVERSION)
 # [ -z "$LOCALVERSION" ] && LOCALVERSION="${VERSION}"
 # [ ! -z "$SETVERSION" ] && LOCALVERSION="${SETVERSION}"
@@ -231,13 +228,13 @@ fi
 #
 # sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion
 
-### Compile kernel
+# Compile kernel
 KBUILD_BUILD_USER="$BUILD_USER" KBUILD_BUILD_HOST="$BUILD_HOST" \
 make -j"$(nproc)" -C "$KERNEL_DIR" O="$OUTPUT_DIR" ${ARGS} \
      EXTRA_CFLAGS:=" -I$KERNEL_DIR/drivers/ufs/host/s5e9945/ -I$KERNEL_DIR/arch/arm64/kvm/hyp/include -DCFG80211_SINGLE_NETDEV_MULTI_LINK_SUPPORT -DTARGET_SOC=${TARGETSOC}"
 
-# Below is something I can't understand well, so I am leaving it as is for now
-sed -i 's/echo ""$/echo "+"/' $KERNEL_DIR/scripts/setlocalversion
+# Fixing version, i have got no idea what it does, better hardcordly disable it
+# sed -i 's/echo ""$/echo "+"/' $KERNEL_DIR/scripts/setlocalversion
 
 # Automated selecting whether img or img.gz is used 
 if [ -f "${OUTPUT_DIR}/arch/arm64/boot/Image" ]; then
@@ -249,7 +246,7 @@ else
   exit 1
 fi
 
-### Odin file creation
+# Odin file creation
 if [ -e "$OUTPUT_DIR/arch/arm64/boot/Image" ]; then
     echo "[✅] Build success."
     python3 "$TOOLS/mkbootimg/mkbootimg.py" --header_version 4 \
@@ -268,10 +265,10 @@ if [ ! -d "${AK3_DIR}" ]; then
   echo "[💠] Cloning AnyKernel3 template..."
   git clone --depth=1 "${AK3_REPO}" "${AK3_DIR}"
 else
-  echo "[💠] Updating AnyKernel3 template..."
-  (cd "${AK3_DIR}" && git fetch --depth=1 origin && git reset --hard origin/master)
+  echo "[💠] Found existing AnyKernel3 template, setting AK3_TEST flag and skipping..."
+  AK3_TEST=1
 fi
-echo "[💠] Packing AnyKernel3 flashable zip: ${AK3_ZIP}"
+echo "[💠] Packing AnyKernel3 flashable zip..."
 (
   cd "${AK3_DIR}" || { echo "[❌] Failed to cd to $AK3_DIR"; }
   zip -r9 "${AK3_ZIP}" . -x "*.git*" README.md
