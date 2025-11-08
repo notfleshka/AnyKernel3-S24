@@ -25,7 +25,7 @@ MENUCONFIG=false    # Enables menuconfig
 # PRINTHELP=false   # Hardcodly disabled, code remnants still present. Prints help message
 CLEAN=false # Cleans output directory
 CONFIG=false    # Only configures the kernel (I am not so sure about what it does)
-CLEAN_BUILDCHAIN=false # Removes buildchain every build. If false, then downloading buildchain and copying prebuilts are skipped.
+CLEAN_BUILDCHAIN=false # Hardcordly disabled. Removes buildchain every build. If false, then downloading buildchain and copying prebuilts are skipped.
 
 # This was used for fixing some versioning issues, but now I think it's not needed, code remnants are still present
 # SETVERSION=""   # Hardcordly disabled. Kernel version to set, I am not sure what is difference between this and local ver)
@@ -73,21 +73,21 @@ function movePrebuilts() {
     echo "[✅] Done."
 }
 
-if [ ! -d "$PREBUILTS" ]; then
-    if [ "$CLEAN_BUILDCHAIN" = true ]; then
-        removeBuildchain
+# if [ ! -d "$PREBUILTS" ]; then
+#    if [ "$CLEAN_BUILDCHAIN" = true ]; then
+#        removeBuildchain
         getBuildtools
         movePrebuilts
-    else
-        echo "[💠] Skipping buildchain download and prebuilt copy."
-    fi
-fi
+#    else
+#        echo "[💠] Skipping buildchain download and prebuilt copy."
+#    fi
+#fi
 
-
-if [ ! -d "$KERNEL_DIR" ]; then
-    echo "[❌] Missing kernel"
-    exit 1
-fi
+# Broken and not needed
+# if [ ! -d "$KERNEL_DIR" ]; then
+#    echo "[❌] Missing kernel"
+#    exit 1
+# fi
 
 
 while [[ $# -gt 0 ]]; do
