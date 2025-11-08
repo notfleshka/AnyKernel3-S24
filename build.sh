@@ -19,6 +19,8 @@ BUILD_USER=""   # Build user name
 
 DISABLE_SAMSUNG_PROTECTION=true # Disables Samsung kernel protection, soon to be deprecated with another method
 ENABLE_KERNELSU=false      # Enables KernelSU support, soon to be deprecated with another method
+ENABLE_SUSFS=false    # Enables SuSFS support, soon to be deprecated with another method
+ENABLE_KPM=false   # Enables KPM support from SukiSU Ultra, soon to be deprecated with another method
 MENUCONFIG=false    # Enables menuconfig
 # PRINTHELP=false   # Hardcodly disabled, code remnants still present. Prints help message
 CLEAN=false # Cleans output directory
@@ -205,7 +207,19 @@ fi
 # KernelSU enable
 if [ "$ENABLE_KERNELSU" = true ]; then
     "${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" \
-        -e CONFIG_KSU -d CONFIG_KSU_KPROBES_HOOK
+        -e CONFIG_KSU 
+fi
+
+# SuSFS enable
+if [ "$ENABLE_SUSFS" = true ]; then
+    "${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" \
+        -e CONFIG_KSU_SUSFS -d CONFIG_KSU_KPROBES_HOOK
+fi
+
+# KPM enable
+if [ "$ENABLE_KPM" = true ]; then
+    "${KERNEL_DIR}/scripts/config" --file "$CONFIG_FILE" \
+        -e CONFIG_KPM
 fi
 
 # Samsung protection remove
