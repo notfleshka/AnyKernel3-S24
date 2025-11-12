@@ -1,3 +1,7 @@
+# Warning
+
+**Due to lack of custom kernels for S24 exynos, I am unable to check how it performs in real use. If you find any issues, tell me about it in [Issues tab](https://github.com/notfleshka/AnyKernel3-S24/issues) or open [pull request](https://github.com/notfleshka/AnyKernel3-S24/pulls) if you know how to fix it.**
+
 # What is this?
 
 **It is an universal AnyKernel3 template for Samsung Galaxy S24 Exynos (could possibly work with other S24 devices). It will most likely work for all kernels for this device, maybe even for other devices, but not tested. Inspired from my previous work: [AnyKernel3 for Samsung A52 and A72](https://github.com/notfleshka/AnyKernel3-A52-A72).**

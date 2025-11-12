@@ -44,6 +44,7 @@ AK3_DIR="${CURRENT_DIR}/AnyKernel3" # AnyKernel3 working directory
 ODIN_TAR="${CURRENT_DIR}/boot.img.tar"  # Odin tar output path
 
 TARGETSOC="s5e9945"
+TARGET_DEFCONFIG="${1:-e1s_defconfig}"
 # End of main variables
 
 # Remove buildchain
@@ -173,7 +174,6 @@ export LD_LIBRARY_PATH="${PREBUILTS}/kernel-build-tools/linux-x86/lib64"
 export HOSTCFLAGS="${SYSROOT_FLAGS} ${CFLAGS}"
 export HOSTLDFLAGS="${SYSROOT_FLAGS} ${LDFLAGS}"
 
-TARGET_DEFCONFIG="${1:-e1s_defconfig}"
 ARGS="CC=clang LD=ld.lld ARCH=arm64 LLVM=1 LLVM_IAS=1"
 CONFIG_FILE="${OUTPUT_DIR}/.config"
 
